@@ -12,11 +12,17 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
 
-    public static void main (String [] args) {
+    public static void main(String[] args) {
+
         StringBuilder tempalte = new StringBuilder();
+        List<String> excludeList = new ArrayList<>();
+        excludeList.add("i-0e637e411a26a3cd4");
+        excludeList.add("i-0f978eabef81c5b20");
         tempalte.append("<!DOCTYPE html>\n" +
                         "<html>\n" +
                         "<head>\n" +
@@ -33,55 +39,64 @@ public class Main {
                         "  </tr>\n");
         final AmazonEC2 ec2 = AmazonEC2ClientBuilder.defaultClient();
         boolean done = false;
+
         DescribeInstancesRequest request = new DescribeInstancesRequest();
-        while(!done) {
+        while (!done) {
             DescribeInstancesResult response = ec2.describeInstances(request);
 
-            for(Reservation reservation : response.getReservations()) {
-                for(Instance instance : reservation.getInstances()) {
-                    if (instance.getState().getName().equals("running")) {
+            for (Reservation reservation : response.getReservations()) {
+                boolean exclude = false;
+                for (Instance instance : reservation.getInstances()) {
+                    for (String id : excludeList) {
+                        if (id.equals(instance.getInstanceId())) {
+                            exclude = true;
+                            break;
+                        }
+                    }
+                    if (!exclude) {
+                        if (instance.getState().getName().equals("running")) {
 
-                        // Get the insatance name
-                        String instanceName = "Unknown";
-                        if (instance.getTags() != null) {
-                            for (Tag tag : instance.getTags()) {
-                                if (tag.getKey().equals("Name")) {
-                                    instanceName = tag.getValue();
-                                    System.out.println("Instance Name : " + instanceName);
+                            // Get the insatance name
+                            String instanceName = "Unknown";
+                            if (instance.getTags() != null) {
+                                for (Tag tag : instance.getTags()) {
+                                    if (tag.getKey().equals("Name")) {
+                                        instanceName = tag.getValue();
+                                        System.out.println("Instance Name : " + instanceName);
+                                    }
                                 }
                             }
+                            tempalte.append("  <tr>\n" +
+                                            "    <td>" + instanceName + "</td>\n" +
+                                            "    <td>" + instance.getInstanceId() + "</td>\n" +
+                                            "    <td>" + instance.getState().getName() + "</td>\n" +
+                                            "    <td>" + instance.getInstanceType() + "</td>\n" +
+                                            "    <td>" + instance.getLaunchTime().toString() + "</td>\n" +
+                                            "  </tr>\n");
+                            System.out.printf(
+                                    "Found instance with id %s, " +
+                                    "AMI %s, " +
+                                    "type %s, " +
+                                    "state %s " +
+                                    "and monitoring state %s",
+                                    instance.getInstanceId(),
+                                    instance.getImageId(),
+                                    instance.getInstanceType(),
+                                    instance.getState().getName(),
+                                    instance.getMonitoring().getState());
                         }
-                        tempalte.append( "  <tr>\n" +
-                                         "    <td>" + instanceName + "</td>\n" +
-                                         "    <td>" + instance.getInstanceId() + "</td>\n" +
-                                         "    <td>"+ instance.getState().getName() + "</td>\n" +
-                                         "    <td>" + instance.getInstanceType() + "</td>\n" +
-                                         "    <td>" + instance.getLaunchTime().toString() + "</td>\n" +
-                                         "  </tr>\n");
-                        System.out.printf(
-                                "Found instance with id %s, " +
-                                "AMI %s, " +
-                                "type %s, " +
-                                "state %s " +
-                                "and monitoring state %s",
-                                instance.getInstanceId(),
-                                instance.getImageId(),
-                                instance.getInstanceType(),
-                                instance.getState().getName(),
-                                instance.getMonitoring().getState());
+                        instance.getKeyName();
                     }
-                    instance.getKeyName();
-                    System.out.println("\n");
                 }
             }
             request.setNextToken(response.getNextToken());
-            if(response.getNextToken() == null) {
+            if (response.getNextToken() == null) {
                 done = true;
             }
         }
         tempalte.append("</table>\n" +
-                       "</body>\n" +
-                       "</html>");
+                        "</body>\n" +
+                        "</html>");
         System.out.println(tempalte);
         File file = new File("./mail.html");
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
