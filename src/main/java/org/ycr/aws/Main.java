@@ -39,6 +39,7 @@ public class Main {
                         "  </tr>\n");
         final AmazonEC2 ec2 = AmazonEC2ClientBuilder.defaultClient();
         boolean done = false;
+        boolean runningInstancesAvailable = false;
 
         DescribeInstancesRequest request = new DescribeInstancesRequest();
         while (!done) {
@@ -55,7 +56,7 @@ public class Main {
                     }
                     if (!exclude) {
                         if (instance.getState().getName().equals("running")) {
-
+                            runningInstancesAvailable = true;
                             // Get the insatance name
                             String instanceName = "Unknown";
                             if (instance.getTags() != null) {
@@ -98,12 +99,14 @@ public class Main {
                         "</body>\n" +
                         "</html>");
         System.out.println(tempalte);
-        File file = new File("./mail.html");
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.write(tempalte.toString());
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (runningInstancesAvailable){
+            File file = new File("./mail.html");
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                writer.write(tempalte.toString());
+                writer.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
