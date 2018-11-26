@@ -20,9 +20,9 @@ public class Main {
     public static void main(String[] args) {
 
         StringBuilder tempalte = new StringBuilder();
-        List<String> excludeList = new ArrayList<>();
-        excludeList.add("i-0e637e411a26a3cd4");
-        excludeList.add("i-0f978eabef81c5b20");
+        List<String> excludeIdList = new ArrayList<>();
+        excludeIdList.add("i-0e637e411a26a3cd4");
+        excludeIdList.add("i-0f978eabef81c5b20");
         tempalte.append("<!DOCTYPE html>\n" +
                         "<html>\n" +
                         "<head>\n" +
@@ -36,6 +36,7 @@ public class Main {
                         "    <th>State</th>\n" +
                         "    <th>Instance Type</th>\n" +
                         "    <th>started Time Stamp</th>\n" +
+                        "    <th>Associated Stack</th>\n" +
                         "  </tr>\n");
         final AmazonEC2 ec2 = AmazonEC2ClientBuilder.defaultClient();
         boolean done = false;
@@ -48,22 +49,27 @@ public class Main {
             for (Reservation reservation : response.getReservations()) {
                 boolean exclude = false;
                 for (Instance instance : reservation.getInstances()) {
-                    for (String id : excludeList) {
+                    for (String id : excludeIdList) {
                         if (id.equals(instance.getInstanceId())) {
                             exclude = true;
                             break;
                         }
                     }
                     if (!exclude) {
-                        if (instance.getState().getName().equals("running")) {
+                        if (instance.getState().getName().equals("running") && !instance.getInstanceType().equals
+                                ("t2.micro")) {
                             runningInstancesAvailable = true;
                             // Get the insatance name
                             String instanceName = "Unknown";
+                            String stackName = "No Stack!";
                             if (instance.getTags() != null) {
                                 for (Tag tag : instance.getTags()) {
                                     if (tag.getKey().equals("Name")) {
                                         instanceName = tag.getValue();
                                         System.out.println("Instance Name : " + instanceName);
+                                    }
+                                    if (tag.getKey().equals("aws:cloudformation:stack-name")){
+                                        stackName = tag.getValue();
                                     }
                                 }
                             }
@@ -73,6 +79,7 @@ public class Main {
                                             "    <td>" + instance.getState().getName() + "</td>\n" +
                                             "    <td>" + instance.getInstanceType() + "</td>\n" +
                                             "    <td>" + instance.getLaunchTime().toString() + "</td>\n" +
+                                            "    <td>" + stackName + "</td>\n" +
                                             "  </tr>\n");
                             System.out.printf(
                                     "Found instance with id %s, " +
