@@ -39,7 +39,7 @@ public class Main {
                         "    <th>Instance Type</th>\n" +
                         "    <th>Started Time Stamp</th>\n" +
                         "    <th>Associated Stack</th>\n" +
-                        "    <th>Uptime</th>\n" +
+                        "    <th>Uptime(Hours)</th>\n" +
                         "  </tr>\n");
         final AmazonEC2 ec2 = AmazonEC2ClientBuilder.defaultClient();
         boolean done = false;
@@ -84,7 +84,7 @@ public class Main {
                                             "    <td>" + instance.getInstanceType() + "</td>\n" +
                                             "    <td>" + instance.getLaunchTime().toString() + "</td>\n" +
                                             "    <td>" + stackName + "</td>\n" +
-                                            "    <td>" + uptime + "</td>\n" +
+                                            "    <td style=\"text-align:center\">" + uptime + "</td>\n" +
                                             "  </tr>\n");
                             System.out.printf(
                                     "Found instance with id %s, " +
