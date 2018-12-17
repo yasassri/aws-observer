@@ -13,7 +13,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 
@@ -35,8 +37,9 @@ public class Main {
                         "    <th>Instance ID</th>\n" +
                         "    <th>State</th>\n" +
                         "    <th>Instance Type</th>\n" +
-                        "    <th>started Time Stamp</th>\n" +
+                        "    <th>Started Time Stamp</th>\n" +
                         "    <th>Associated Stack</th>\n" +
+                        "    <th>Uptime</th>\n" +
                         "  </tr>\n");
         final AmazonEC2 ec2 = AmazonEC2ClientBuilder.defaultClient();
         boolean done = false;
@@ -73,6 +76,7 @@ public class Main {
                                     }
                                 }
                             }
+                            long uptime = getDateDiff(instance.getLaunchTime(), new Date(), TimeUnit.HOURS);
                             tempalte.append("  <tr>\n" +
                                             "    <td>" + instanceName + "</td>\n" +
                                             "    <td>" + instance.getInstanceId() + "</td>\n" +
@@ -80,6 +84,7 @@ public class Main {
                                             "    <td>" + instance.getInstanceType() + "</td>\n" +
                                             "    <td>" + instance.getLaunchTime().toString() + "</td>\n" +
                                             "    <td>" + stackName + "</td>\n" +
+                                            "    <td>" + uptime + "</td>\n" +
                                             "  </tr>\n");
                             System.out.printf(
                                     "Found instance with id %s, " +
@@ -115,5 +120,17 @@ public class Main {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Get a diff between two dates
+     * @param date1 the oldest date
+     * @param date2 the newest date
+     * @param timeUnit the unit in which you want the diff
+     * @return the diff value, in the provided unit
+     */
+    public static long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
+        long diffInMillies = date2.getTime() - date1.getTime();
+        return timeUnit.convert(diffInMillies,TimeUnit.MILLISECONDS);
     }
 }
