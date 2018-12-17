@@ -77,15 +77,29 @@ public class Main {
                                 }
                             }
                             long uptime = getDateDiff(instance.getLaunchTime(), new Date(), TimeUnit.HOURS);
-                            tempalte.append("  <tr>\n" +
-                                            "    <td>" + instanceName + "</td>\n" +
-                                            "    <td>" + instance.getInstanceId() + "</td>\n" +
-                                            "    <td>" + instance.getState().getName() + "</td>\n" +
-                                            "    <td>" + instance.getInstanceType() + "</td>\n" +
-                                            "    <td>" + instance.getLaunchTime().toString() + "</td>\n" +
-                                            "    <td>" + stackName + "</td>\n" +
-                                            "    <td style=\"text-align:center\">" + uptime + "</td>\n" +
-                                            "  </tr>\n");
+                            if (uptime > 2) {
+                                tempalte.append("  <tr style=\"color: #f71313; font-weight:bold\">\n" +
+                                                "    <td>" + instanceName + "</td>\n" +
+                                                "    <td>" + instance.getInstanceId() + "</td>\n" +
+                                                "    <td>" + instance.getState().getName() + "</td>\n" +
+                                                "    <td>" + instance.getInstanceType() + "</td>\n" +
+                                                "    <td>" + instance.getLaunchTime().toString() + "</td>\n" +
+                                                "    <td>" + stackName + "</td>\n" +
+                                                "    <td style=\"text-align:center\">" + uptime + "</td>\n" +
+                                                "  </tr>\n");
+
+                            } else {
+                                tempalte.append("  <tr>\n" +
+                                                "    <td>" + instanceName + "</td>\n" +
+                                                "    <td>" + instance.getInstanceId() + "</td>\n" +
+                                                "    <td>" + instance.getState().getName() + "</td>\n" +
+                                                "    <td>" + instance.getInstanceType() + "</td>\n" +
+                                                "    <td>" + instance.getLaunchTime().toString() + "</td>\n" +
+                                                "    <td>" + stackName + "</td>\n" +
+                                                "    <td style=\"text-align:center\">" + uptime + "</td>\n" +
+                                                "  </tr>\n");
+                            }
+
                             System.out.printf(
                                     "Found instance with id %s, " +
                                     "AMI %s, " +
