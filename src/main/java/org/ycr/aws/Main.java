@@ -25,6 +25,7 @@ public class Main {
         List<String> excludeIdList = new ArrayList<>();
         excludeIdList.add("i-0e637e411a26a3cd4");
         excludeIdList.add("i-0f978eabef81c5b20");
+        excludeIdList.add("i-0e937ecb63213d21b");
         tempalte.append("<!DOCTYPE html>\n" +
                         "<html>\n" +
                         "<head>\n" +
